@@ -20,6 +20,7 @@ class Player {
   }
 
   void update(double t) {
+    currentHealth = currentHealth>0?currentHealth-1:0;
     if (!isDead && currentHealth <= 0) {
       isDead = true;
       // reset game

@@ -6,6 +6,8 @@ import 'package:flame/game.dart';
 import 'package:flame/gestures.dart';
 import 'package:flutter/gestures.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tap_n_tap/components/health_bar.dart';
+import 'package:tap_n_tap/components/player.dart';
 import 'package:tap_n_tap/components/score_text.dart';
 import 'package:tap_n_tap/components/tile_rect.dart';
 
@@ -18,7 +20,9 @@ class GameController extends Game with TapDetector {
   double tileWidth;
   double tileHeight;
   List<TileRect> tiles;
+  Player player;
   ScoreText scoreText;
+  HealthBar healthBar;
   int score;
 
   GameController(this.storage) {
@@ -39,7 +43,9 @@ class GameController extends Game with TapDetector {
     int pos = rand.nextInt(tiles.length);
     tiles[pos].wake();
     score = 0;
+    player = Player(this);
     scoreText = ScoreText(this);
+    healthBar = HealthBar(this);
   }
 
   @override
@@ -50,11 +56,14 @@ class GameController extends Game with TapDetector {
 
     tiles.forEach((TileRect tile) => tile.render(c));
     scoreText.render(c);
+    healthBar.render(c);
   }
 
   @override
   void update(double t) {
+    player.update(t);
     scoreText.update(t);
+    healthBar.update(t);
   }
 
   void resize(Size size) {
@@ -65,14 +74,19 @@ class GameController extends Game with TapDetector {
 
   @override
   void onTapDown(TapDownDetails d) {
+    if (player.isDead) return;
+    bool create = false;
     tiles.forEach((TileRect tile) {
       if (tile.tile.contains(d.globalPosition)) {
         tile.onTapDown();
+        create = true;
       }
     });
     // One Nice Bug -- Looks Good
-    int pos = rand.nextInt(tiles.length);
-    tiles[pos].wake();
+    if (create) {
+      int pos = rand.nextInt(tiles.length);
+      tiles[pos].wake();
+    }
   }
 
 }
